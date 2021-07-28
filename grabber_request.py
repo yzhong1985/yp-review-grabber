@@ -5,7 +5,9 @@ import re
 import time 
 import random
 
-REVIEW_NUMBER_CLASS = 'css-1h1j0y3'
+REVIEW_NUMBER_CLASS1 = 'css-1h1j0y3' 
+REVIEW_NUMBER_CLASS2 = 'css-bq71j2' # with picture
+
 REVIEW_USERNAME_CLASS = 'css-166la90'
 REVIEW_RATING_CLASS = 'i-stars__373c0___sZu0'
 REVIEW_DATETIME_CLASS = 'css-e81eai'
@@ -26,14 +28,19 @@ def get_reivew_pages (main_page_url, interval, proxy):
   response = requests.get(finalurl, proxies=proxies_used, timeout=5).text
   # use BeautifulSoup to parse HTML
   soup = BeautifulSoup(response,'html.parser')
-  number_reviews = soup.find (class_=REVIEW_NUMBER_CLASS).text
+  number_reviews = soup.find(class_=REVIEW_NUMBER_CLASS1).text
+  # simply check if the review text is longer than the review len, if not, use the other class
+  ltext = len('review')
+  if len(number_reviews) <= ltext:
+    number_reviews = soup.find(class_=REVIEW_NUMBER_CLASS2).text
+    
   # use rex to extract the numbers from a string 
   number_reviews = int(re.findall('\d+', number_reviews)[0])
   #print (str(number_reviews) + ' found for this business: ' + business_id)
   # create a list for all reviews url of this business
   url_list = []
   for i in range (0, number_reviews, 10):
-    url_list.append(main_page_url + '?start='+str(i))
+    url_list.append(finalurl + '?start='+str(i))
   return number_reviews, url_list 
 
 def scrap_pg_reivews(business_id, request_url, proxy):

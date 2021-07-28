@@ -28,7 +28,7 @@ ap.add_argument("-s", "--start", required=True, type=int, help="specify the star
 ap.add_argument("-e", "--end", type=int, help="specify the ending index")
 ap.add_argument("-n", "--n_in_batch", type=int, default=5, help="how many business should be stored in a file and output (1 batch)")
 ap.add_argument("-t", '--time', type=int, default=60, help="defines the time interval between request (in seconds)")
-ap.add_argument("-w", '--wait', type=int, default=0, help="defines the wait time between batches (in seconds)")
+ap.add_argument("-w", '--wait', type=int, default=600, help="defines the wait time between batches (in seconds)")
 ap.add_argument("-f", "--filepath", default='SBRC_Doctor_Reviews.csv', help='specifiy the input source file')
 ap.add_argument("-p", "--proxy", default="", help="specify the proxy number and port, if used, e.g 1.1.1.1:800" )
 args = vars(ap.parse_args())
@@ -62,7 +62,6 @@ if args.get("filepath", False):
 if args.get("proxy", False):
     proxy_used = args["proxy"]
 
-
 display_info()
 
 from grabber_request import *
@@ -87,6 +86,7 @@ for i in range(start_idx, end_index+1, num_in_file):
         try:
             b_id = row['Business ID ']
             b_url = row['URL']
+            print('##########################################')
             print('grabber starts to work on business: ' , b_id)
             b_reviews = get_business_reviews(b_id, b_url, time_interval, proxy_used)
             print(b_reviews[0], ' reviews retreived for this business: ' , b_id)
@@ -102,7 +102,8 @@ for i in range(start_idx, end_index+1, num_in_file):
         df_output.to_csv(output_csv_path, encoding='utf-8', index=False)
         print('output file ' , output_csv_path, 'was generated') # should add timestamp
 
-    time.sleep (wait_between_batch) # add a wait time
+    if (i + num_in_file) < (end_index + 1): # if last loop, dont need to wait
+        time.sleep (wait_between_batch) # add a wait time
 
 # if err, output a log file
 if len(all_err_files) > 0:
